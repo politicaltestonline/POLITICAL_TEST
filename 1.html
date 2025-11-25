@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Политически Компас – Професионален Тест</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+    --bg-body: #0f172a;
+    --bg-card: #1e293b;
+    --text-main: #f1f5f9;
+    --text-muted: #94a3b8;
+    --accent: #6366f1;
+    --accent-hover: #4f46e5;
+    --success: #10b981;
+    --danger: #ef4444;
+    --neutral: #64748b; /* Gray for neutral */
+}
+
+* { box-sizing: border-box; }
+body { 
+    margin: 0; 
+    font-family: 'Inter', sans-serif; 
+    background: var(--bg-body); 
+    color: var(--text-main);
+    line-height: 1.5;
+}
+
+.container {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+/* HEADER */
+.header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+.header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0 0 10px 0;
+    background: linear-gradient(135deg, #fff 30%, var(--accent) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.header p { color: var(--text-muted); }
+
+/* PROGRESS BAR */
+.progress-container {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--bg-body);
+    padding: 20px 0;
+    margin-bottom: 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.progress-track {
+    background: rgba(255,255,255,0.1);
+    height: 8px;
+    border-radius: 4px;
+    overflow: hidden;
+}
+.progress-fill {
+    height: 100%;
+    background: var(--accent);
+    width: 0%;
+    transition: width 0.3s ease;
+}
+.progress-text {
+    text-align: right;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-top: 5px;
+}
+
+/* QUESTION CARDS */
+.question-card {
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 24px;
+    border: 1px solid rgba(255,255,255,0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeUp 0.5s forwards;
+}
+.question-card:hover {
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+@keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.q-category {
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--accent);
+}
+.q-text {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
+/* SCENARIO TEXT STYLING */
+.scenario-box {
+    background: rgba(255,255,255,0.03);
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border-left: 3px solid var(--accent);
+}
+.scenario-option {
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+}
+.scenario-option strong { color: #fff; }
+
+/* OPTION BUTTONS GRID */
+.options-grid {
+    display: grid;
+    gap: 8px;
+}
+
+/* 4 Columns for Scenarios (A/B) */
+.options-grid.cols-4 {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+/* 5 Columns for Statements (Agree/Neutral/Disagree) */
+.options-grid.cols-5 {
+    grid-template-columns: repeat(5, 1fr);
+}
+
+.opt-btn {
+    background: transparent;
+    border: 2px solid rgba(255,255,255,0.1);
+    color: var(--text-muted);
+    padding: 12px 2px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+    text-align: center;
+    line-height: 1.2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.opt-btn:hover {
+    border-color: rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.02);
+}
+
+/* SELECTED STATES */
+.opt-btn.selected {
+    color: #fff;
+    transform: scale(1.02);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+/* Dynamic colors based on selection value */
+/* Positive (Agree / A) */
+.opt-btn[data-val="2"].selected { background: var(--success); border-color: var(--success); }
+.opt-btn[data-val="1"].selected { background: rgba(16, 185, 129, 0.6); border-color: var(--success); }
+
+/* Neutral (0) */
+.opt-btn[data-val="0"].selected { background: var(--neutral); border-color: #94a3b8; color: #fff; }
+
+/* Negative (Disagree / B) */
+.opt-btn[data-val="-1"].selected { background: rgba(239, 68, 68, 0.6); border-color: var(--danger); }
+.opt-btn[data-val="-2"].selected { background: var(--danger); border-color: var(--danger); }
+
+
+/* FOOTER ACTIONS */
+.actions {
+    margin-top: 40px;
+    text-align: center;
+    padding-bottom: 60px;
+}
+.btn-calc {
+    background: var(--accent);
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 700;
+    padding: 16px 40px;
+    border-radius: 50px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
+}
+.btn-calc:disabled {
+    background: #334155;
+    color: #64748b;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+.btn-calc:not(:disabled):hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 35px rgba(99, 102, 241, 0.5);
+}
+
+.error-msg {
+    color: var(--danger);
+    margin-top: 10px;
+    font-size: 0.9rem;
+    height: 20px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+/* RESULT SECTION */
+.result-section {
+    display: none; /* hidden initially */
+    flex-direction: column;
+    align-items: center;
+    margin-top: 40px;
+    animation: fadeIn 0.8s ease;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.compass-wrapper {
+    background: #fff;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    margin-bottom: 30px;
+}
+canvas { display: block; }
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    width: 100%;
+    margin-top: 20px;
+}
+.stat-box {
+    background: rgba(255,255,255,0.05);
+    padding: 15px;
+    border-radius: 10px;
+    text-align: center;
+}
+.stat-label { font-size: 0.8rem; color: var(--text-muted); }
+.stat-val { font-size: 1.2rem; font-weight: 700; margin-top: 5px; }
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    /* Stack stats */
+    .stats-grid { grid-template-columns: 1fr; }
+    
+    /* On mobile, 5 columns is too tight. 
+       We use a 3-top, 2-bottom layout for statements, or just allow wrapping. */
+    .options-grid.cols-5 {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    /* Make the last 2 items span nicely if needed, or just let them flow */
+    .options-grid.cols-5 button:nth-child(4), 
+    .options-grid.cols-5 button:nth-child(5) {
+         /* Optional: make them larger on mobile row 2? 
+            Let's keep them uniform grid for simplicity, 
+            3 on row 1, 2 on row 2 implies empty space. 
+            We can make the last two span 1.5 if we want, but simple grid is fine.
+         */
+         grid-column: span 1; 
+    }
+    /* Center the last row items? */
+    .options-grid.cols-5 button:nth-child(4) { grid-column: 1 / span 2; }
+    .options-grid.cols-5 button:nth-child(5) { grid-column: 2 / span 2; } 
+    /* Wait, 3 cols: 
+       Row 1: [1][2][3]
+       Row 2: [4-span-1.5][5-span-1.5]
+    */
+     .options-grid.cols-5 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .options-grid.cols-5 button:nth-child(3) {
+        grid-column: span 2; /* Neutral takes full width in middle */
+        order: 3;
+    }
+    .options-grid.cols-5 button:nth-child(1) { order: 1; }
+    .options-grid.cols-5 button:nth-child(2) { order: 2; }
+    .options-grid.cols-5 button:nth-child(4) { order: 4; }
+    .options-grid.cols-5 button:nth-child(5) { order: 5; }
+
+    /* Scenario 4 cols on mobile -> 2x2 */
+    .options-grid.cols-4 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>Политически Компас</h1>
+        <p>Отговорете на всички 30 въпроса. <br><small>За обикновените въпроси има опция "Неутрален". За сценариите трябва да изберете страна.</small></p>
+    </div>
+
+    <div class="progress-container">
+        <div class="progress-track">
+            <div class="progress-fill" id="progressBar"></div>
+        </div>
+        <div class="progress-text" id="progressText">0 / 30</div>
+    </div>
+
+    <div id="quizContainer">
+        </div>
+
+    <div class="actions">
+        <button id="calcBtn" class="btn-calc" disabled>Изчисли Резултат</button>
+        <div id="errorMsg" class="error-msg">Моля, отговорете на всички въпроси.</div>
+    </div>
+
+    <div id="resultArea" class="result-section">
+        <h2 style="margin-bottom:20px;">Вашият Политически Профил</h2>
+        
+        <div class="compass-wrapper">
+            <canvas id="compassCanvas" width="500" height="500"></canvas>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-box">
+                <div class="stat-label">Икономическа ос</div>
+                <div class="stat-val" id="resEcon">--</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Социална ос</div>
+                <div class="stat-val" id="resSoc">--</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Геополитическа ос</div>
+                <div class="stat-val" id="resGeo">--</div>
+            </div>
+        </div>
+        
+        <button onclick="location.reload()" class="opt-btn" style="margin-top:30px; width:auto; padding: 10px 30px; border-color:var(--text-muted)">Нов Тест</button>
+    </div>
+</div>
+
+<script>
+/* DATA DEFINITION */
+
+const questions = [
+    // --- ИКОНОМИКА (1-10) ---
+    // Statements (1-5) -> 5 Options
+    { id: 1, text: "Държавата трябва да осигурява повече социални услуги.", type: "statement", axis: "econ", direction: -1 },
+    { id: 2, text: "Свободният пазар е по-добър регулатор.", type: "statement", axis: "econ", direction: 1 },
+    { id: 3, text: "Големите компании трябва да бъдат по-строго регулирани.", type: "statement", axis: "econ", direction: -1 },
+    { id: 4, text: "Приватизацията е по-ефективна от държавната собственост.", type: "statement", axis: "econ", direction: 1 },
+    { id: 5, text: "Богатите трябва да плащат по-високи данъци.", type: "statement", axis: "econ", direction: -1 },
+
+    // Scenarios (6-10) -> 4 Options (A/B)
+    { id: 6, title: "Социални услуги и криза", type: "scenario", axis: "econ", 
+      optA: "Подкрепяш държавата да увеличи финансирането чрез по-високи данъци.", 
+      optB: "Не подкрепяш – предпочиташ болницата да се поеме от частна фирма.", 
+      dirA: -1, dirB: 1 },
+      
+    { id: 7, title: "Минимална работна заплата", type: "scenario", axis: "econ",
+      optA: "Подкрепяш значително увеличение на минималната заплата.",
+      optB: "Не подкрепяш – смяташ, че пазарът трябва да решава.",
+      dirA: -1, dirB: 1 },
+
+    { id: 8, title: "Данъци за високите доходи", type: "scenario", axis: "econ",
+      optA: "Подкрепяш по-висок данък върху много високите доходи.",
+      optB: "Не подкрепяш – смяташ, че това наказва успеха и вреди на икономиката.",
+      dirA: -1, dirB: 1 },
+
+    { id: 9, title: "Частни срещу държавни услуги", type: "scenario", axis: "econ",
+      optA: "Подкрепяш държавата да подобри услугата.",
+      optB: "Не подкрепяш – предпочиташ частна фирма да я управлява, дори да е по-скъпо.",
+      dirA: -1, dirB: 1 },
+
+    { id: 10, title: "Помощи за безработни", type: "scenario", axis: "econ",
+      optA: "Подкрепяш удължаване на помощите за безработни.",
+      optB: "Не подкрепяш – предпочиташ по-кратки помощи и повече стимули за работа.",
+      dirA: -1, dirB: 1 },
+
+
+    // --- СОЦИАЛНА (11-20) ---
+    // Statements (11-15) -> 5 Options
+    { id: 11, text: "Държавата трябва да има право да ограничава личното поведение.", type: "statement", axis: "soc", direction: 1 },
+    { id: 12, text: "Личните свободи са по-важни от държавния контрол.", type: "statement", axis: "soc", direction: -1 },
+    { id: 13, text: "Строгите наказания намаляват престъпността.", type: "statement", axis: "soc", direction: 1 },
+    { id: 14, text: "Хората трябва да могат свободно да живеят, както искат.", type: "statement", axis: "soc", direction: -1 },
+    { id: 15, text: "Държавата трябва да следи по-стриктно интернет пространството.", type: "statement", axis: "soc", direction: 1 },
+
+    // Scenarios (16-20) -> 4 Options
+    { id: 16, title: "Видеонаблюдение в града", type: "scenario", axis: "soc",
+      optA: "Подкрепяш монтиране на повече камери за сигурност.",
+      optB: "Не подкрепяш – това нарушава личното пространство.",
+      dirA: 1, dirB: -1 },
+
+    { id: 17, title: "Наркомании и закони", type: "scenario", axis: "soc",
+      optA: "Подкрепяш декриминализация на малки количества леки наркотици.",
+      optB: "Не подкрепяш – държавата трябва да възпира вредното поведение.",
+      dirA: -1, dirB: 1 },
+
+    { id: 18, title: "Интернет контрол", type: "scenario", axis: "soc",
+      optA: "Подкрепяш държавата да има право да сваля опасни сайтове.",
+      optB: "Не подкрепяш – това е прекален контрол и може да се злоупотреби.",
+      dirA: 1, dirB: -1 },
+
+    { id: 19, title: "Престъпление и наказание", type: "scenario", axis: "soc",
+      optA: "Подкрепяш увеличаване на присъдите.",
+      optB: "Не подкрепяш – по-важни са превенцията и реинтеграция.",
+      dirA: 1, dirB: -1 },
+
+    { id: 20, title: "Забрана на протести при извънредни ситуации", type: "scenario", axis: "soc",
+      optA: "Подкрепяш временно ограничаване на масовите протести при криза.",
+      optB: "Не подкрепяш – правото на протест е фундаментално.",
+      dirA: 1, dirB: -1 },
+
+
+    // --- ГЕОПОЛИТИКА (21-30) ---
+    // Statements (21-25) -> 5 Options
+    { id: 21, text: "Границите трябва да бъдат по-строго контролирани.", type: "statement", axis: "geo", direction: 1 },
+    { id: 22, text: "Международното сътрудничество носи повече ползи, отколкото вреди.", type: "statement", axis: "geo", direction: -1 },
+    { id: 23, text: "Миграцията трябва да бъде ограничена.", type: "statement", axis: "geo", direction: 1 },
+    { id: 24, text: "Светът трябва да бъде по-свързан културно и икономически.", type: "statement", axis: "geo", direction: -1 },
+    { id: 25, text: "Националният интерес трябва да стои над международните споразумения.", type: "statement", axis: "geo", direction: 1 },
+
+    // Scenarios (26-30) -> 4 Options
+    { id: 26, title: "Бежанци и криза", type: "scenario", axis: "geo",
+      optA: "Подкрепяш приемане на определен брой бежанци.",
+      optB: "Не подкрепяш – държавата първо трябва да защитава своите граждани.",
+      dirA: -1, dirB: 1 },
+
+    { id: 27, title: "Международни споразумения", type: "scenario", axis: "geo",
+      optA: "Подкрепяш договор с общи международни правила.",
+      optB: "Не подкрепяш – страната не трябва да губи суверенитет.",
+      dirA: -1, dirB: 1 },
+
+    { id: 28, title: "Външна търговия", type: "scenario", axis: "geo",
+      optA: "Подкрепяш намаляване на митата за по-голяма търговия.",
+      optB: "Не подкрепяш – местният бизнес трябва да бъде защитен.",
+      dirA: -1, dirB: 1 },
+
+    { id: 29, title: "Граничен контрол", type: "scenario", axis: "geo",
+      optA: "Подкрепяш по-строг граничен контрол и повече гранична полиция.",
+      optB: "Не подкрепяш – смяташ, че това ограничава движението.",
+      dirA: 1, dirB: -1 },
+
+    { id: 30, title: "Наднационални институции (ЕС, ООН и др.)", type: "scenario", axis: "geo",
+      optA: "Подкрепяш по-голяма интеграция.",
+      optB: "Не подкрепяш – държавата трябва да остане независима.",
+      dirA: -1, dirB: 1 }
+];
+
+// Stores answers: questionId -> value (-2 to 2)
+const answers = {};
+
+function init() {
+    const container = document.getElementById('quizContainer');
+    
+    questions.forEach((q, index) => {
+        const card = document.createElement('div');
+        card.className = 'question-card';
+        card.style.animationDelay = `${index * 50}ms`;
+
+        // Category Label
+        const cat = document.createElement('div');
+        cat.className = 'q-category';
+        if(q.axis === 'econ') cat.textContent = "Икономика";
+        if(q.axis === 'soc') cat.textContent = "Общество";
+        if(q.axis === 'geo') cat.textContent = "Геополитика";
+        card.appendChild(cat);
+
+        // Content
+        if (q.type === 'statement') {
+            const h3 = document.createElement('h3');
+            h3.className = 'q-text';
+            h3.textContent = `${q.id}. ${q.text}`;
+            card.appendChild(h3);
+            
+            // Statement Buttons: 5 Options (Standard + Neutral)
+            card.appendChild(createButtonGrid(q.id, [
+                { label: "Твърдо да", val: 2 },
+                { label: "Да", val: 1 },
+                { label: "Неутрален", val: 0 },
+                { label: "Не", val: -1 },
+                { label: "Твърдо не", val: -2 }
+            ], 'cols-5'));
+
+        } else {
+            // Scenario
+            const h3 = document.createElement('h3');
+            h3.className = 'q-text';
+            h3.textContent = `${q.id}. ${q.title}`;
+            card.appendChild(h3);
+
+            const box = document.createElement('div');
+            box.className = 'scenario-box';
+            box.innerHTML = `
+                <div class="scenario-option"><strong>A)</strong> ${q.optA}</div>
+                <div class="scenario-option"><strong>B)</strong> ${q.optB}</div>
+            `;
+            card.appendChild(box);
+
+            // Scenario Buttons: 4 Options (No Neutral)
+            card.appendChild(createButtonGrid(q.id, [
+                { label: "Твърдо А", val: 2 },
+                { label: "А", val: 1 },
+                { label: "Б", val: -1 },
+                { label: "Твърдо Б", val: -2 }
+            ], 'cols-4'));
+        }
+
+        container.appendChild(card);
+    });
+}
+
+function createButtonGrid(qId, options, gridClass) {
+    const grid = document.createElement('div');
+    grid.className = 'options-grid ' + gridClass;
+    
+    options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'opt-btn';
+        btn.textContent = opt.label;
+        btn.dataset.qid = qId;
+        btn.dataset.val = opt.val;
+        
+        btn.onclick = () => selectOption(qId, opt.val, btn);
+        grid.appendChild(btn);
+    });
+    return grid;
+}
+
+function selectOption(qId, val, btnElem) {
+    // 1. Record Answer
+    answers[qId] = val;
+
+    // 2. UI Updates
+    // Remove selected class from siblings
+    const parent = btnElem.parentElement;
+    Array.from(parent.children).forEach(child => child.classList.remove('selected'));
+    // Add to clicked
+    btnElem.classList.add('selected');
+
+    // 3. Update Progress
+    updateProgress();
+}
+
+function updateProgress() {
+    const answeredCount = Object.keys(answers).length;
+    const total = questions.length;
+    const pct = (answeredCount / total) * 100;
+
+    document.getElementById('progressBar').style.width = `${pct}%`;
+    document.getElementById('progressText').textContent = `${answeredCount} / ${total}`;
+
+    const btn = document.getElementById('calcBtn');
+    const err = document.getElementById('errorMsg');
+    
+    if (answeredCount === total) {
+        btn.disabled = false;
+        err.style.opacity = '0';
+    } else {
+        btn.disabled = true;
+    }
+}
+
+document.getElementById('calcBtn').addEventListener('click', () => {
+    // Double check
+    if (Object.keys(answers).length < questions.length) {
+        document.getElementById('errorMsg').style.opacity = '1';
+        return;
+    }
+    calculateResults();
+});
+
+function calculateResults() {
+    // Scores: -20 to +20 range (10 questions * +/-2 max)
+    let econScore = 0;
+    let socScore = 0;
+    let geoScore = 0;
+
+    questions.forEach(q => {
+        const rawVal = answers[q.id]; // 2, 1, 0, -1, -2
+        // Note: if neutral (0), rawVal is 0, so score added is 0. Correct.
+        if (rawVal === undefined) return;
+
+        if (q.type === 'statement') {
+            const multiplier = q.direction;
+            const scoreToAdd = rawVal * multiplier;
+            if (q.axis === 'econ') econScore += scoreToAdd;
+            if (q.axis === 'soc') socScore += scoreToAdd;
+            if (q.axis === 'geo') geoScore += scoreToAdd;
+        } else {
+            // Scenario Logic
+            const magnitude = Math.abs(rawVal); // 1 or 2
+            const isA = rawVal > 0;
+            const direction = isA ? q.dirA : q.dirB;
+            
+            const scoreToAdd = magnitude * direction;
+            if (q.axis === 'econ') econScore += scoreToAdd;
+            if (q.axis === 'soc') socScore += scoreToAdd;
+            if (q.axis === 'geo') geoScore += scoreToAdd;
+        }
+    });
+
+    displayResults(econScore, socScore, geoScore);
+}
+
+function displayResults(econ, soc, geo) {
+    // Hide quiz, show results
+    document.getElementById('quizContainer').style.display = 'none';
+    document.querySelector('.actions').style.display = 'none';
+    document.querySelector('.progress-container').style.display = 'none';
+    document.querySelector('.header p').style.display = 'none';
+    
+    const resultArea = document.getElementById('resultArea');
+    resultArea.style.display = 'flex';
+
+    // Update text
+    document.getElementById('resEcon').textContent = econ.toFixed(1);
+    document.getElementById('resSoc').textContent = soc.toFixed(1);
+    document.getElementById('resGeo').textContent = geo.toFixed(1);
+
+    drawCompass(econ, soc);
+    
+    // Smooth scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function drawCompass(econ, soc) {
+    const canvas = document.getElementById('compassCanvas');
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+    
+    // Max score is 20 (10 questions * 2 points). Scale to canvas.
+    const maxScore = 20;
+
+    // Clear
+    ctx.clearRect(0, 0, width, height);
+    
+    // Dimensions
+    const p = 40; // padding
+    const w = width - p*2;
+    const h = height - p*2;
+    const cx = width / 2;
+    const cy = height / 2;
+
+    // --- 1. Background Quadrants ---
+    // Top Left: Auth Left (Red)
+    ctx.fillStyle = "#ff5858";
+    ctx.fillRect(p, p, w/2, h/2);
+
+    // Top Right: Auth Right (Blue)
+    ctx.fillStyle = "#58a2ff";
+    ctx.fillRect(cx, p, w/2, h/2);
+
+    // Bottom Left: Lib Left (Green)
+    ctx.fillStyle = "#58ff6d";
+    ctx.fillRect(p, cy, w/2, h/2);
+
+    // Bottom Right: Lib Right (Purple)
+    ctx.fillStyle = "#cfa6ff";
+    ctx.fillRect(cx, cy, w/2, h/2);
+
+    // --- 2. Grid ---
+    ctx.strokeStyle = "rgba(255,255,255,0.3)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    const cells = 10; 
+    const stepX = w / (cells * 2); // 20 units total across
+    const stepY = h / (cells * 2);
+    
+    for(let i=0; i<=cells*2; i++) {
+        // Vert
+        ctx.moveTo(p + i*stepX, p);
+        ctx.lineTo(p + i*stepX, p + h);
+        // Horz
+        ctx.moveTo(p, p + i*stepY);
+        ctx.lineTo(p + w, p + i*stepY);
+    }
+    ctx.stroke();
+
+    // --- 3. Axes ---
+    ctx.strokeStyle = "#333";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    // X Axis
+    ctx.moveTo(p, cy);
+    ctx.lineTo(p+w, cy);
+    // Y Axis
+    ctx.moveTo(cx, p);
+    ctx.lineTo(cx, p+h);
+    ctx.stroke();
+
+    // --- 4. Labels ---
+    ctx.fillStyle = "#333";
+    ctx.font = "bold 14px Inter, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    ctx.fillText("Authoritarian", cx, p - 15);
+    ctx.fillText("Libertarian", cx, p + h + 15);
+    
+    ctx.textAlign = "right";
+    ctx.fillText("Left", p - 10, cy);
+    ctx.textAlign = "left";
+    ctx.fillText("Right", p + w + 10, cy);
+
+    // --- 5. The Dot ---
+    // Normalize -20..20 to -1..1
+    const normX = econ / maxScore;
+    const normY = soc / maxScore;
+    
+    // Canvas coords
+    const dotX = cx + (normX * (w/2));
+    const dotY = cy - (normY * (h/2));
+
+    // Shadow
+    ctx.beginPath();
+    ctx.arc(dotX, dotY, 12, 0, Math.PI*2);
+    ctx.fillStyle = "rgba(0,0,0,0.3)";
+    ctx.fill();
+
+    // Dot
+    ctx.beginPath();
+    ctx.arc(dotX, dotY, 8, 0, Math.PI*2);
+    ctx.fillStyle = "#cc0000";
+    ctx.fill();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = "white";
+    ctx.stroke();
+}
+
+// Start
+init();
+
+</script>
+</body>
+</html>
